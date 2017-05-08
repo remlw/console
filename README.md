@@ -13,7 +13,8 @@ The primary features of this theme are:
 * Post search functionality
 * svg symbol functionality (plugin)
 * string original type check functionality (plugin)
-* Rake to create a post
+* Rake to create a post / category
+* Related posts customization
 * txtpen integration
 * Disqus integration (with each post having its unique identifier)
 * Color customization functionality
@@ -33,6 +34,7 @@ There are more features to come. Stay tuned!
 * [Usage](#usage)
   * [Creating a post](#create-post)
   * [Creating a category](#create-category)
+  * [Adding related posts to a post](#add-related-posts)
   * [Integrating Disqus with your website](#integrate-disqus)
   * [Integrating txtpen with your website](#integrate-txtpen)
   * [Customizing Console Theme Colors](#customize-console-color)
@@ -121,8 +123,23 @@ The syntax for this rake command is [assuming that you are in the root folder]:
 ```ruby
 rake category title="Title" [href=""] [id=""] [subcat_of="id of super category"]
 ```
-
 [] are optionals. Please for href, do not add '/'! This script will automatically create that for you.
+
+When executing this command, you will be prompted to supply translated version of that category name, this program fetches available languages from `_config.yml`, which has `languages` option.
+
+!Unfortunately, for modifying and deleting existing categories, please wait for updates, which should be happening soon.
+
+### Adding related posts to a post
+<div id="add-related-posts"></div>
+
+Unlike other jekyll plugins, which leverage popular text analysis algorithms to automatically find related posts, a user must specify related posts for each post in the YAML front matter. Each post can uniquely be identified via `disqus_identifier` variable in the front matter (you might consider this as an id of a post). To add related posts please add `related` variable like:
+
+```yaml
+related:
+ - 050336f93fbba1f6
+ - 76bb54921f3bbef7
+```
+(This sample is extracted from 'sample10' post, which can be found in `_posts/2017-02-08-sample10.md`)
 
 ### Integrating Disqus with your website.
 <div id='integrate-disqus'></div>
