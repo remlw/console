@@ -2,13 +2,7 @@
 
   Rakefile created by Jae Hee Lee @ 2017
 
-  The main reason for using Rake to generate files is to:
-
-  1. ease the post creation process
-  2. to assign 'random' hex for each post to uniquely identify posts
-  independent from their variables
-
-  I am about to add further functionalities in the future.
+  The rake files dependent on this main rakefile can be found in tasks/*.rake
 
 =end
 
@@ -30,119 +24,8 @@ CONFIG = {
   'post_ext' => "md",
 }
 
-# Usage: rake localize id=""
-desc "Create a new localization data in #{CONFIG['data']}"
-task :localize do
-  abort("rake aborted: '#{CONFIG['data']}' directory not found.") unless FileTest.directory?(CONFIG['data'])
-  id = ENV['id']
-  localize(id)
-  puts "Localization data '#{id}' has been successfully created."
-end
-
-# Usage: rake category title="" [href=""]  [id=""] [subcat_of="id of super category"]
-# remove []! this is only to say that these fields are optional.
-# By default, the href and id would be made by making the title lowercased.
-# Note that the after performing this task, the json files will be uglified. To prettify, please google 'json prettyfier'
-desc "Create a new category in #{CONFIG['categories']}"
-task :category do
-  abort("rake aborted: '#{CONFIG['categories']}' directory not found.") unless FileTest.directory?(CONFIG['categories'])
-
-  title = ENV['title'] || "rand-cat"
-  href = ENV['href'] || title.downcase.strip.gsub(' ', '-').gsub(/[^\w-]/, '')
-  id = ENV['id'] || title.downcase.strip.gsub(' ', '-').gsub(/[^\w-]/, '')
-  subcat_of = ENV['subcat_of'] || ""
-  cat_file = '_data/categories.json'
-
-  if(subcat_of != "")
-    FileUtils::mkdir_p File.join(CONFIG['categories'], "#{subcat_of}/#{id}")
-    filename = File.join(CONFIG['categories'], "#{subcat_of}/#{id}/index.#{CONFIG['post_ext']}")
-  else
-    FileUtils::mkdir_p File.join(CONFIG['categories'], "#{id}")
-    filename = File.join(CONFIG['categories'], "#{id}/index.#{CONFIG['post_ext']}")
-  end
-
-  if(File.exist?(filename))
-    abort("rake aborted") if ask("#{filename} already exists. Overwrite?", ['y', 'n']) == 'n'
-  end
-
-  puts "Creating new category: #{filename}."
-
-  open(filename, 'w') do |category|
-    category.puts "---"
-    category.puts "layout: post"
-    category.puts "title: #{title}"
-    category.puts "category: #{id}"
-    category.puts "---"
-    category.puts ""
-    category.puts "{% include category.html param = page.layout %}"
-  end
-
-  localize(id)
-
-  #temporary json (which will be parsed to JSON)
-  tempJSON = {
-    "title" => title,
-    "href" => '/' + href,
-    "id" => id
-  }
-
-  #adding the category into categories.json file
-  File.truncate(cat_file, File.size(cat_file) - 1)
-
-  File.open(cat_file, 'a') do |cat|
-   cat.write(',' + tempJSON.to_json + ']')
-  end
-
-  puts "Category '#{title}' has been successfully created!"
-
-end
-
-# Usage: rake post title="Title" [date="2017-01-13"] [category="category"]
-# remove []! this is only to say that these fields are optional.
-# By default, every post's commenting functionality will be on. Change if necessary.
-desc "Begin a new post in #{CONFIG['posts']}"
-task :post do
-  abort("rake aborted: '#{CONFIG['posts']}' directory not found.") unless FileTest.directory?(CONFIG['posts'])
-
-  title = ENV["title"] || "new-post"
-  category = ENV["category"] || ""
-  slug = title.downcase.strip.gsub(' ', '-').gsub(/[^\w-]/, '')
-
-  begin
-    date = ( ENV['date'] ? Time.parse(ENV['date']) : Time.now).strftime('%Y-%m-%d')
-  rescue => e
-    puts "Error: date format must be YYYY-MM-DD, please check it once more"
-    exit -1
-  end
-
-  filename = File.join(CONFIG['posts'], "#{date}-#{slug}.#{CONFIG['post_ext']}")
-
-  if(File.exist?(filename))
-    abort("rake aborted") if ask("#{filename} already exists. Overwrite?", ['y', 'n']) == 'n'
-  end
-
-  puts "Creating new post: #{filename}."
-
-  open(filename, 'w') do |post|
-    post.puts "---"
-    post.puts "layout: post"
-    post.puts "title: \"#{title.gsub(/-/, ' ')}\""
-    post.puts "category: #{category}"
-    post.puts "date: #{date}"
-    post.puts "comments: true"
-    post.puts "disqus_identifier: #{SecureRandom.hex(8)}"
-    post.puts "highlights: false"
-    post.puts "---"
-  end
-
-  puts "Post '#{title}' has been successfully created!"
-
-end
-
 =begin
-
   Common Functions
-
 =end
 
 # asking user for further options
@@ -210,3 +93,6 @@ def localize(id)
     trans.write(',' + permJSON)
   end
 end
+
+# Loads all separate rake files
+Dir['tasks/*.rake'].sort.each { |f| load f }
