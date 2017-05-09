@@ -1,5 +1,5 @@
 namespace "category" do
-  # Usage: rake category title="" [href=""]  [id=""] [subcat_of="id of super category"]
+  # Usage: rake category:create title="" [href=""]  [id=""] [subcat_of="id of super category"]
   # remove []! this is only to say that these fields are optional.
   # By default, the href and id would be made by making the title lowercased.
   # Note that the after performing this task, the json files will be uglified. To prettify, please google 'json prettyfier'
