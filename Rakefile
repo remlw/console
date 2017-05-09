@@ -26,8 +26,18 @@ CONFIG = {
   'layouts' => File.join(SOURCE, "_layouts"),
   'posts' => File.join(SOURCE, "_posts"),
   'categories' => File.join(SOURCE, "category"),
+  'data' => File.join(SOURCE, "_data"),
   'post_ext' => "md",
 }
+
+# Usage: rake localize id=""
+desc "Create a new localization data in #{CONFIG['data']}"
+task :localize do
+  abort("rake aborted: '#{CONFIG['data']}' directory not found.") unless FileTest.directory?(CONFIG['data'])
+  id = ENV['id']
+  localize(id)
+  puts "Localization data '#{id}' has been successfully created."
+end
 
 # Usage: rake category title="" [href=""]  [id=""] [subcat_of="id of super category"]
 # remove []! this is only to say that these fields are optional.
@@ -42,7 +52,6 @@ task :category do
   id = ENV['id'] || title.downcase.strip.gsub(' ', '-').gsub(/[^\w-]/, '')
   subcat_of = ENV['subcat_of'] || ""
   cat_file = '_data/categories.json'
-  trans_file = '_data/localization.json'
 
   if(subcat_of != "")
     FileUtils::mkdir_p File.join(CONFIG['categories'], "#{subcat_of}/#{id}")
@@ -68,50 +77,7 @@ task :category do
     category.puts "{% include category.html param = page.layout %}"
   end
 
-  #loading _config.yml to fetch languages option.
-  config_yml = YAML.load_file('_config.yml')
-  available_langs = config_yml['languages']
-  translated = Hash.new
-
-  #localization step
-  for lang in available_langs
-    puts "Please enter " + lang + " translation for the category '" + title + "':"
-    ARGV.clear
-    response = gets.chomp()
-    translated[lang] = response
-  end
-
-  tempJSON = Hash.new
-  tempJSON[id] = translated
-  permJSON = tempJSON.to_json
-  permJSON[0] = "" # will have to remove the first { to concatenate to existing string.
-
-  #parsing
-  permJSON.insert(permJSON.index('{'), '[')
-
-  indexes = Array.new
-
-  for i in (0..permJSON.length)
-    if(permJSON[i] == ',')
-      indexes.push(i)
-    end
-  end
-
-  counter = 0
-
-  for idx in indexes
-    permJSON.insert(idx + counter, '}')
-    permJSON.insert(idx + counter + 2, '{')
-    counter += 2
-  end
-
-  permJSON.insert(permJSON.rindex('}'), ']')
-
-  #adding the localization for the category into localization.json file
-  File.truncate(trans_file, File.size(trans_file) - 1)
-  File.open(trans_file, 'a') do |trans|
-    trans.write(',' + permJSON)
-  end
+  localize(id)
 
   #temporary json (which will be parsed to JSON)
   tempJSON = {
@@ -192,4 +158,55 @@ end
 def get_stdin(message)
   print message
   STDIN.gets.chomp
+end
+
+def localize(id)
+  trans_file = '_data/localization.json'
+
+  #loading _config.yml to fetch languages option.
+  config_yml = YAML.load_file('_config.yml')
+  available_langs = config_yml['languages']
+  translated = Hash.new
+
+  puts "Creating new localization data ..."
+
+  #localization step
+  for lang in available_langs
+    puts "Please enter " + lang + " translation for the category '" + id + "':"
+    ARGV.clear
+    response = gets.chomp()
+    translated[lang] = response
+  end
+
+  tempJSON = Hash.new
+  tempJSON[id] = translated
+  permJSON = tempJSON.to_json
+  permJSON[0] = "" # will have to remove the first { to concatenate to existing string.
+
+  #parsing
+  permJSON.insert(permJSON.index('{'), '[')
+
+  indexes = Array.new
+
+  for i in (0..permJSON.length)
+    if(permJSON[i] == ',')
+      indexes.push(i)
+    end
+  end
+
+  counter = 0
+
+  for idx in indexes
+    permJSON.insert(idx + counter, '}')
+    permJSON.insert(idx + counter + 2, '{')
+    counter += 2
+  end
+
+  permJSON.insert(permJSON.rindex('}'), ']')
+
+  #adding the localization for the category into localization.json file
+  File.truncate(trans_file, File.size(trans_file) - 1)
+  File.open(trans_file, 'a') do |trans|
+    trans.write(',' + permJSON)
+  end
 end
