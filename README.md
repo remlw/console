@@ -34,6 +34,7 @@ There are more features to come. Stay tuned!
 * [Usage](#usage)
   * [Creating a post](#create-post)
   * [Creating a category](#create-category)
+  * [Contributing to localization](#localize)
   * [Adding related posts to a post](#add-related-posts)
   * [Integrating Disqus with your website](#integrate-disqus)
   * [Integrating txtpen with your website](#integrate-txtpen)
@@ -65,6 +66,14 @@ It has been known that sometimes it may be necessary to run above command **twic
 
     $ bundle install
     $ bundle exec jekyll serve
+
+Also, please make sure that rake tasks are loaded correctly. In the folder that contains `Rakefile`, in the command line, execute `rake -T` and you should be able to see the following tasks:
+
+<ul>
+ <li>rake category:create</li>
+ <li>rake localize:create</li>
+ <li>rake post:create</li>
+</ul>
 
 There you go! If you would like to publish it using Github Pages, you can view my website for your reference.
 
@@ -102,7 +111,7 @@ Therefore, please do use gulp!
 Please use `rake` command to create a post. Using this command would automatically generate Jekyll front matter with a unique Disqus identifier. The syntax for rake command is [assuming that you are in the root folder]:
 
 ```ruby
-rake post title="Title" [date="2017-01-13"] [category="category"]
+rake post:create title="Title" [date="2017-01-13"] [category="category"]
 ```
 
 [] are optionals.
@@ -121,13 +130,26 @@ Please use `rake` command to create a category. Using this command would automat
 The syntax for this rake command is [assuming that you are in the root folder]:
 
 ```ruby
-rake category title="Title" [href=""] [id=""] [subcat_of="id of super category"]
+rake category:create title="Title" [href=""] [id=""] [subcat_of="id of super category"]
 ```
 [] are optionals. Please for href, do not add '/'! This script will automatically create that for you.
 
-When executing this command, you will be prompted to supply translated version of that category name, this program fetches available languages from `_config.yml`, which has `languages` option.
+When executing this command, you will be prompted to supply translated version of that category name. This program fetches available languages from `_config.yml`, which has `languages` option.
 
 !Unfortunately, for modifying and deleting existing categories, please wait for updates, which should be happening soon.
+
+### Contributing to localization
+<div id="localize"></div>
+
+To make an entry to `_data/localization.json`, please execute the following command:
+
+```ruby
+rake localize:create id=""
+```
+
+When executing this command, you will be prompted to supply translation for this entry. This program fetches available languages from `_config.yml`, which has `languages` option.
+
+!Unfortunately, for modifying and deleting existing entries. please wait for updates, which should be happening soon.
 
 ### Adding related posts to a post
 <div id="add-related-posts"></div>
