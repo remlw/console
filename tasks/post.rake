@@ -1,5 +1,5 @@
 namespace "post" do
-  # Usage: rake post title="Title" [date="2017-01-13"] [category="category"]
+  # Usage: rake post:create title="Title" [date="2017-01-13"] [category="category"]
   # remove []! this is only to say that these fields are optional.
   # By default, every post's commenting functionality will be on. Change if necessary.
   desc "Create a new post in #{CONFIG['posts']}"
