@@ -22,6 +22,9 @@ CONFIG = {
   'categories' => File.join(SOURCE, "category"),
   'data' => File.join(SOURCE, "_data"),
   'post_ext' => "md",
+  'cat_file' => '_data/categories.json',
+  'trans_file' => '_data/localization.json',
+  'config_file' => '_config.yml'
 }
 
 =begin
@@ -43,11 +46,37 @@ def get_stdin(message)
   STDIN.gets.chomp
 end
 
-def localize(id)
-  trans_file = '_data/localization.json'
+# creates category folder and index.md associated with that category
+def create_cat(title, id, subcat_of = nil)
+  if(subcat_of == nil)
+    FileUtils::mkdir_p File.join(CONFIG['categories'], "#{id}")
+    filename = File.join(CONFIG['categories'], "#{id}/index.#{CONFIG['post_ext']}")
+  else
+    FileUtils::mkdir_p File.join(CONFIG['categories'], "#{subcat_of}/#{id}")
+    filename = File.join(CONFIG['categories'], "#{subcat_of}/#{id}/index.#{CONFIG['post_ext']}")
+  end
 
+  if(File.exist?(filename))
+    abort("rake aborted") if ask("#{filename} already exists. Overwrite?", ['y', 'n']) == 'n'
+  end
+
+  puts "Creating new subcategory: #{filename}."
+
+  open(filename, 'w') do |category|
+    category.puts "---"
+    category.puts "layout: post"
+    category.puts "title: #{title}"
+    category.puts "category: #{id}"
+    category.puts "---"
+    category.puts ""
+    category.puts "{% include category.html param = page.layout %}"
+  end
+end
+
+# takes an id and executes localization tasks
+def localize(id)
   #loading _config.yml to fetch languages option.
-  config_yml = YAML.load_file('_config.yml')
+  config_yml = YAML.load_file(CONFIG['config_file'])
   available_langs = config_yml['languages']
   translated = Hash.new
 
@@ -88,8 +117,8 @@ def localize(id)
   permJSON.insert(permJSON.rindex('}'), ']')
 
   #adding the localization for the category into localization.json file
-  File.truncate(trans_file, File.size(trans_file) - 1)
-  File.open(trans_file, 'a') do |trans|
+  File.truncate(CONFIG['trans_file'], File.size(CONFIG['trans_file']) - 1)
+  File.open(CONFIG['trans_file'], 'a') do |trans|
     trans.write(',' + permJSON)
   end
 end
