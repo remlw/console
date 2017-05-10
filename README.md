@@ -35,6 +35,7 @@ There are more features to come. Stay tuned!
   * [Creating a post](#create-post)
   * [Creating a category](#create-category)
   * [Contributing to localization](#localize)
+  * [Querying category and localization](#query-cat-loc)
   * [Adding related posts to a post](#add-related-posts)
   * [Integrating Disqus with your website](#integrate-disqus)
   * [Integrating txtpen with your website](#integrate-txtpen)
@@ -71,8 +72,13 @@ Also, please make sure that rake tasks are loaded correctly. In the folder that 
 
 <ul>
  <li>rake category:create</li>
+ <li>rake category:list</li>
+ <li>rake category:query</li>
  <li>rake localize:create</li>
+ <li>rake localize:list</li>
+ <li>rake localize:query</li>
  <li>rake post:create</li>
+ <li>rake subcategory:create</li>
 </ul>
 
 There you go! If you would like to publish it using Github Pages, you can view my website for your reference.
@@ -130,7 +136,8 @@ Please use `rake` command to create a category. Using this command would automat
 The syntax for this rake command is [assuming that you are in the root folder]:
 
 ```ruby
-rake category:create title="Title" [href=""] [id=""] [subcat_of="id of super category"]
+rake category:create title="Title" [href=""] [id=""]
+rake subcategory:create title="" subcat_of="" (cat_id) [href=""] [id=""]
 ```
 [] are optionals. Please for href, do not add '/'! This script will automatically create that for you.
 
@@ -150,6 +157,33 @@ rake localize:create id=""
 When executing this command, you will be prompted to supply translation for this entry. This program fetches available languages from `_config.yml`, which has `languages` option.
 
 !Unfortunately, for modifying and deleting existing entries. please wait for updates, which should be happening soon.
+
+### Querying category and localization
+<div id="query-cat-loc"></div>
+
+The motivation behind for creating these functionalities is that when the file size for `_data/category.json` and `_data/localization.json` gets too large, changing these files by directly modifying the json files is not practical. Furthermore, above rake commands will uglify the existing json, making the querying process much harder for users. To address these problems, I have created rake commands to see the list and query specific key and its respective value.
+
+```ruby
+rake category:list
+rake category:query id=""
+rake localize:list
+rake localize:query id=""
+```
+For these commands, there are no optional parameters. For example,
+
+```ruby
+rake category:query id="computing"
+```
+will give us the following result:
+```
+title: Computing
+href: /computing
+id: computing
+subcategories: exists
+    1. Machine Learning ( id:machine_learning, href: /machine_learning )
+    2. Web Programming ( id:web_programming, href: /web_programming )
+    3. Algorithms ( id:algorithms, href: /algorithms )
+```
 
 ### Adding related posts to a post
 <div id="add-related-posts"></div>
