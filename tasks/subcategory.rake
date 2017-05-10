@@ -3,7 +3,6 @@ namespace "subcategory" do
     # remove []! this is only to say that these fields are optional.
   # By default, the href and id would be made by making the title lowercased.
   # Note that the after performing this task, the json files will be uglified. To prettify, please google 'json prettyfier'
-
   desc "Create a subcategory under a specified category in #{CONFIG['categories']}"
   task :create do
     #Validation
