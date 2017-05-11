@@ -5,14 +5,11 @@ namespace "subcategory" do
   # Note that the after performing this task, the json files will be uglified. To prettify, please google 'json prettyfier'
   desc "Create a subcategory under a specified category in #{CONFIG['categories']}"
   task :create do
-    #Validation
-    if(ENV['title'] == nil)
-      abort("rake aborted! Please provide title option.")
-    end
 
-    if(ENV['subcat_of'] == nil)
-      abort("rake aborted! Please provide subcat_of option.")
-    end
+    #Validation
+    directory_check('categories')
+    validate('title')
+    validate('subcat_of')
 
     #env vars
     title = ENV['title']

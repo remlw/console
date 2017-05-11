@@ -123,5 +123,16 @@ def localize(id)
   end
 end
 
+def validate(env_var)
+  if(ENV[env_var] == nil)
+    abort("rake aborted! Please provide " + env_var + " option.")
+  end
+end
+
+def directory_check(config_var)
+  config_var = CONFIG[config_var]
+  abort("rake aborted: '#{config_var}' directory not found.") unless FileTest.directory?(config_var)
+end
+
 # Loads all separate rake files
 Dir['tasks/*.rake'].sort.each { |f| load f }

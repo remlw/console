@@ -4,9 +4,11 @@ namespace "post" do
   # By default, every post's commenting functionality will be on. Change if necessary.
   desc "Create a new post in #{CONFIG['posts']}"
   task :create do
-    abort("rake aborted: '#{CONFIG['posts']}' directory not found.") unless FileTest.directory?(CONFIG['posts'])
 
-    title = ENV["title"] || "new-post"
+    directory_check('posts')
+    validate('title')
+
+    title = ENV["title"]
     category = ENV["category"] || ""
     slug = title.downcase.strip.gsub(' ', '-').gsub(/[^\w-]/, '')
 

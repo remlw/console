@@ -5,11 +5,9 @@ namespace "category" do
   # Note that the after performing this task, the json files will be uglified. To prettify, please google 'json prettyfier'
   desc "Create a new category in #{CONFIG['categories']}"
   task :create do
-    abort("rake aborted: '#{CONFIG['categories']}' directory not found.") unless FileTest.directory?(CONFIG['categories'])
+    directory_check('categories')
 
-    if(ENV['title'] == nil)
-      abort("rake aborted! Please provide title option.")
-    end
+    validate('title')
 
     title = ENV['title'] || "rand-cat"
     href = ENV['href'] || title.downcase.strip.gsub(' ', '-').gsub(/[^\w-]/, '')
@@ -50,12 +48,11 @@ namespace "category" do
     end
   end
 
+  # Usage rake category:query id=""
   desc "Query specific category about its information"
   task :query do
-    abort("rake aborted: '#{CONFIG['data']}' directory not found.") unless FileTest.directory?(CONFIG['data'])
-    if(ENV['id'] == nil)
-      abort("rake aborted! Please provide id option.")
-    end
+    directory_check('data')
+    validate('id')
     cat_file = File.read(CONFIG['cat_file'])
     cat_file_hash = JSON.parse(cat_file)
     cat_file_hash.each do |elem|
@@ -73,6 +70,13 @@ namespace "category" do
         end
       end
     end
+  end
+
+  # Usage rake category:modify id=""
+  desc "Modify category"
+  task :modify do
+    directory_check('data')
+    validate('id')
   end
 
 end
