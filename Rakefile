@@ -60,17 +60,75 @@ def create_cat(title, id, subcat_of = nil)
     abort("rake aborted") if ask("#{filename} already exists. Overwrite?", ['y', 'n']) == 'n'
   end
 
-  puts "Creating new subcategory: #{filename}."
+  if(subcat_of != nil)
+    puts "Creating new subcategory: #{filename}."
+
+    open(filename, 'w') do |category|
+      category.puts "---"
+      category.puts "layout: post"
+      category.puts "title: #{title}"
+      category.puts "category: #{id}"
+      category.puts "---"
+      category.puts ""
+      category.puts "{% include category.html param = page.layout %}"
+    end
+  else
+    puts "Creating new category: #{filename}."
+
+    open(filename, 'w') do |category|
+      category.puts "---"
+      category.puts "layout: category"
+      category.puts "title: #{title}"
+      category.puts "category: #{id}"
+      category.puts "---"
+      category.puts ""
+      category.puts "{% include category.html param = page.layout %}"
+    end
+  end
+end
+
+#modifies category index.md file
+def modify_cat(id, title = nil)
+
+  filename = File.join(CONFIG['categories'], "#{id}/index.#{CONFIG['post_ext']}")
+
+  puts "Modifying category " + id + " ..."
+
+  extracted_title = ""
+
+  if(title == nil)
+    cat_file = File.read(CONFIG['cat_file'])
+    cat_file_hash = JSON.parse(cat_file)
+    cat_file_hash.each do |elem|
+      if( elem['id'] == id)
+        extracted_title = elem['title']
+      end
+    end
+  end
 
   open(filename, 'w') do |category|
     category.puts "---"
-    category.puts "layout: post"
-    category.puts "title: #{title}"
+    category.puts "layout: category"
+    if(title == nil)
+      category.puts "title: #{extracted_title}"
+    else
+      category.puts "title: #{title}"
+    end
     category.puts "category: #{id}"
     category.puts "---"
     category.puts ""
     category.puts "{% include category.html param = page.layout %}"
   end
+end
+
+# renames the specified directory
+def rename_directory(prev, curr)
+  File.rename prev, curr
+end
+
+def delete_directory(parent, child)
+  FileUtils::rm_rf(parent + '/' + child)
+  puts parent + '/' + child + " directory has been deleted."
 end
 
 # takes an id and executes localization tasks
@@ -121,6 +179,27 @@ def localize(id)
   File.open(CONFIG['trans_file'], 'a') do |trans|
     trans.write(',' + permJSON)
   end
+end
+
+def validate(env_var)
+  if(ENV[env_var] == nil)
+    abort("rake aborted! Please provide " + env_var + " option.")
+  end
+end
+
+def directory_check(config_var)
+  config_var = CONFIG[config_var]
+  abort("rake aborted: '#{config_var}' directory not found.") unless FileTest.directory?(config_var)
+end
+
+def hash_write_to_json_file(hash_file, file_name)
+    # convert hash back to json
+    json_file = JSON.generate(hash_file)
+
+    # clears the actual file and write the result to it
+    File.open(CONFIG[file_name], 'w') do |cat|
+      cat.write(json_file)
+    end
 end
 
 # Loads all separate rake files

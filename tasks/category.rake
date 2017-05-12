@@ -5,11 +5,9 @@ namespace "category" do
   # Note that the after performing this task, the json files will be uglified. To prettify, please google 'json prettyfier'
   desc "Create a new category in #{CONFIG['categories']}"
   task :create do
-    abort("rake aborted: '#{CONFIG['categories']}' directory not found.") unless FileTest.directory?(CONFIG['categories'])
+    directory_check('categories')
 
-    if(ENV['title'] == nil)
-      abort("rake aborted! Please provide title option.")
-    end
+    validate('title')
 
     title = ENV['title'] || "rand-cat"
     href = ENV['href'] || title.downcase.strip.gsub(' ', '-').gsub(/[^\w-]/, '')
@@ -50,12 +48,11 @@ namespace "category" do
     end
   end
 
+  # Usage rake category:query id=""
   desc "Query specific category about its information"
   task :query do
-    abort("rake aborted: '#{CONFIG['data']}' directory not found.") unless FileTest.directory?(CONFIG['data'])
-    if(ENV['id'] == nil)
-      abort("rake aborted! Please provide id option.")
-    end
+    directory_check('data')
+    validate('id')
     cat_file = File.read(CONFIG['cat_file'])
     cat_file_hash = JSON.parse(cat_file)
     cat_file_hash.each do |elem|
@@ -73,6 +70,87 @@ namespace "category" do
         end
       end
     end
+  end
+
+  # Usage rake category:modify id=""
+  desc "Modify category"
+  task :modify do
+    directory_check('data')
+    validate('id')
+
+    puts "What would you like to do for the category " + ENV['id'] + " ?"
+    response = ask("1. modify title\n2. modify href\n3. modify id\n", ['1', '2', '3'])
+    result = ""
+
+    cat_file = File.read(CONFIG['cat_file'])
+    cat_file_hash = JSON.parse(cat_file)
+    cat_file_hash.each do |elem|
+      if(elem['id'] == ENV['id'])
+        case response
+        when '1'
+          puts "Please enter new title for the category '" + ENV['id'] + "':"
+          ARGV.clear
+          result = gets.chomp()
+          origin = elem['title']
+          elem['title'] = result
+          puts "Category " + ENV['id'] + "\'s title has changed from '" + origin + "' to '" + result + "'."
+        when '2'
+          puts "Please enter new href for the category '" + ENV['id'] + "':"
+          ARGV.clear
+          result = "/" + gets.chomp()
+          origin = elem['href']
+          elem['href'] = result
+          puts "Category " + ENV['id'] + "\'s href has changed from '" + origin + "' to '" + result + "'."
+        when '3'
+          puts "Please enter new id for the category '" + ENV['id'] + "':"
+          ARGV.clear
+          result = gets.chomp()
+          origin = elem['id']
+          elem['id'] = result
+          puts "Category " + ENV['id'] + "\'s id has changed from '" + origin + "' to '" + result + "'."
+        end
+      end
+    end
+
+    hash_write_to_json_file(cat_file_hash, 'cat_file')
+
+    # Now we need to modify the folders if id were to be modified
+    if(response == '3')
+      rename_directory('./category/' + ENV['id'], './category/' + result)
+
+      # Change the content of index.md by changing category name in YAML front matter
+      modify_cat(result)
+    end
+
+    puts "Modification process has succesfully been terminated."
+
+  end
+
+  desc "Delete category"
+  task :delete do
+    directory_check('data')
+    validate('id')
+
+    response = ask("If this category has subcategories, they will be deleted as well, continue?", ['y', 'n'])
+
+    if(response == 'n')
+      abort("Rake aborted.")
+    end
+
+    # First delete category details from categories.json
+    cat_file = File.read(CONFIG['cat_file'])
+    cat_file_hash = JSON.parse(cat_file)
+    cat_file_hash.each do |elem|
+      if( elem['id'] == ENV['id'])
+        elem.clear
+      end
+    end
+
+    hash_write_to_json_file(cat_file_hash, 'cat_file')
+
+    #Second delete folder from category
+    delete_directory('category', ENV['id'])
+
   end
 
 end
