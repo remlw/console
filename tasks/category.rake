@@ -79,7 +79,7 @@ namespace "category" do
     validate('id')
 
     puts "What would you like to do for the category " + ENV['id'] + " ?"
-    response = ask("1. modify title\n2. modify href\n3. modify id\n", ['1', '2', '3'])
+    response = ask("1. modify title\n2. modify href\n3. modify id\n4. modify all in one\n", ['1', '2', '3', '4'])
     result = ""
 
     cat_file = File.read(CONFIG['cat_file'])
@@ -108,6 +108,14 @@ namespace "category" do
           origin = elem['id']
           elem['id'] = result
           puts "Category " + ENV['id'] + "\'s id has changed from '" + origin + "' to '" + result + "'."
+        when '4'
+          puts "Please enter new id for the category '" + ENV['id'] + "' (will be applied to href and title):"
+          ARGV.clear
+          result = gets.chomp()
+          origin = elem['id']
+          elem['id'] = result
+          elem['href'] = "/" + result
+          elem['title'] = result #the first char has to be capitalized
         end
       end
     end
@@ -115,9 +123,8 @@ namespace "category" do
     hash_write_to_json_file(cat_file_hash, 'cat_file')
 
     # Now we need to modify the folders if id were to be modified
-    if(response == '3')
+    if(response == '3' || response == '4')
       rename_directory('./category/' + ENV['id'], './category/' + result)
-
       # Change the content of index.md by changing category name in YAML front matter
       modify_cat(result)
     end

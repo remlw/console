@@ -57,4 +57,38 @@ namespace "subcategory" do
     puts "Subcategory '#{title}' has been successfully created!"
   end
 
+  desc "Modify a subcategory belonging to a category in #{CONFIG['categories']}"
+  task :modify do
+    directory_check('data')
+    validate('id')
+    # task 1 : find the subcategory from
+    parent_id = ""
+    result = ""
+
+    cat_file = File.read(CONFIG['cat_file'])
+    cat_file_hash = JSON.parse(cat_file)
+    cat_file_hash.each do |elem|
+      if (elem['subcategories'] != nil)
+        for subelem in elem['subcategories']
+          if(subelem['id'] == ENV['id'])
+            parent_id = elem['id']
+            #perform changes!
+            puts "Please enter new id for the subcategory '" + ENV['id'] + "':"
+            ARGV.clear
+            result = gets.chomp()
+            origin = subelem['id']
+            subelem['id'] = result
+            puts "Subcategory " + ENV['id'] + "\'s id has changed from '" + origin + "' to '" + result + "'."
+          end
+        end
+      end
+    end
+
+    hash_write_to_json_file(cat_file_hash, 'cat_file')
+
+    ## Debugging required
+    #rename_directory('./category/' + parent_id + '/' + ENV['id'], './category/' + parent_id + '/' + result)
+    #modify_subcat(parent_id, result)
+  end
+
 end

@@ -89,26 +89,47 @@ end
 
 #modifies category index.md file
 def modify_cat(id, title = nil)
-
   filename = File.join(CONFIG['categories'], "#{id}/index.#{CONFIG['post_ext']}")
-
   puts "Modifying category " + id + " ..."
+  modify_cat_cont(id, false, title)
+end
 
+def modify_subcat(parent_id, child_id, title = nil)
+  filename = File.join(CONFIG['categories'], "#{parent_id}/#{child_id}/index.#{CONFIG['post_ext']}")
+  puts "Modifying subcategory " + parent_id + " belonging to category " + child_id + " ..."
+  modify_cat_cont(child_id, true, title)
+end
+
+def modify_cat_cont(id, isSubcat, title = nil)
   extracted_title = ""
 
   if(title == nil)
     cat_file = File.read(CONFIG['cat_file'])
     cat_file_hash = JSON.parse(cat_file)
     cat_file_hash.each do |elem|
-      if( elem['id'] == id)
-        extracted_title = elem['title']
+      if !isSubcat
+        if( elem['id'] == id)
+          extracted_title = elem['title']
+        end
+      else
+        if (elem['subcategories'] != nil)
+          for subelem in elem['subcategories']
+            if( subelem['id'] == id)
+              extracted_title = subelem['title']
+            end
+          end
+        end
       end
     end
   end
 
   open(filename, 'w') do |category|
     category.puts "---"
-    category.puts "layout: category"
+    if !isSubcat
+      category.puts "layout: category"
+    else
+      category.puts "layout: post"
+    end
     if(title == nil)
       category.puts "title: #{extracted_title}"
     else
