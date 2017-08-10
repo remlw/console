@@ -4,12 +4,12 @@
 # Site settings
 
 title: Console
-email: jaeheelee0113@gmail.com
+email: info@remlw.com
 description: > # this means to ignore newlines until "baseurl:"
   Console theme simplifying Jekyll blog implementation process. Concise and fast theme.
 baseurl: "" # the subpath of your site, e.g. /blog
-production_url: "http://localhost:3000"
-url: http://localhost:3000 # the base hostname & protocol for your site, e.g. http://example.com
+production_url: "http://www.remlw.com"
+url: http://www.remlw.com # the base hostname & protocol for your site, e.g. http://example.com
 permalink: /posts/:categories/:title
 
 # Footer social links if not provided then the icon would not be visible
